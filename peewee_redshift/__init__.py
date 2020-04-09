@@ -1,9 +1,9 @@
 from itertools import groupby
 from operator import itemgetter
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 # noinspection PyProtectedMember
-from peewee import ColumnMetadata, ViewMetadata, ForeignKeyMetadata
+from peewee import ColumnMetadata, ViewMetadata, ForeignKeyMetadata, Model
 from playhouse.reflection import PostgresqlDatabase, PostgresqlMetadata, UnknownField, Introspector
 
 skip_schemas = ['information_schema']
@@ -200,12 +200,18 @@ class RedshiftIntrospector(Introspector):
     @classmethod
     def from_database(cls, database, schema=None):
         if isinstance(database, RedshiftDatabase):
-            database.stash = RedshiftStash(database, schemas=schema)
             return cls(RedshiftMetadata(database), schema=schema)
         else:
             return super().from_database(database, schema)
 
 
-def generate_models(database, schema=None, **options):
-    introspector = RedshiftIntrospector.from_database(database, schema=schema)
-    return introspector.generate_models(**options)
+def generate_multi_schema_models(database, schema: List[str] = None, **options) -> Dict[str, Dict[str, Model]]:
+    database.stash = RedshiftStash(database, schema, tables=options.get('table_names'))
+    schemas = set(database.stash.tables.keys())
+    schemas.update(set(database.stash.views.keys()))
+    models = dict()
+    for s in schemas:
+        schema_introspector = RedshiftIntrospector.from_database(database, schema=s)
+        models[s] = schema_introspector.generate_models(**options)
+
+    return models

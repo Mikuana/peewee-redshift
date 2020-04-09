@@ -6,7 +6,7 @@ from typing import List, Tuple
 from peewee import ColumnMetadata, ViewMetadata, ForeignKeyMetadata
 from playhouse.reflection import PostgresqlDatabase, PostgresqlMetadata, UnknownField, Introspector
 
-skip_schemas = ['information_schema', 'pg_catalog', 'pg_toast']
+skip_schemas = ['information_schema']
 
 
 class RedshiftDatabase(PostgresqlDatabase):
@@ -75,7 +75,7 @@ class RedshiftStash:
         if self.schema_filter:
             where, params = f"{schema_column} IN %s", (tuple(self.schema_filter),)
         else:
-            where, params = f"{schema_column} NOT IN %s", (tuple(skip_schemas),)
+            where, params = f"left({schema_column}, 3) != 'pg_' AND {schema_column} NOT IN %s", (tuple(skip_schemas),)
         return where, params
 
     def where_table_parm(self, schema_column, table_column) -> Tuple[str, tuple]:

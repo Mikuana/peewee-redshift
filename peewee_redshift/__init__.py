@@ -82,7 +82,7 @@ class RedshiftStash:
         where, params = self.where_schema_parm(schema_column)
         if self.table_filter:
             where += f" AND {table_column} IN %s"
-            params = params + tuple(self.table_filter)
+            params = params + (tuple(self.table_filter),)
         return where, params
 
     def stash_tables(self):

@@ -4,12 +4,12 @@ import setuptools
 
 setuptools.setup(
     name="peewee_redshift",
-    version="0.0.1",
+    version="0.0.2",
     author="Christopher Boyd",
     description="An Amazon Redshift database extension for the Pewee ORM",
     long_description_content_type="text/markdown",
     long_description=Path('README.md').read_text(),
-    url=None,
+    url='https://github.com/Mikuana/peewee-redshift',
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
